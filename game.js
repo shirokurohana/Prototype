@@ -1,8 +1,12 @@
-/*  Students: Please use this week's project for Week 13: Assignment 16: Prototype. 
-     You will need to replace the contents of this JavaScript file with your own work, 
-     and create any other files, if any, required for the assignment.
-     When you are done, be certain to submit the assignment in Canvas to be graded. */
-// credits to
+// 1) credits to Professor
+// 2) credits for images/meadow.jpg: https://opengameart.org/content/meadow-background
+// 3) credits for sounds/cute.mp3 to migfus20: https://opengameart.org/content/cute-intro-music 
+// 4) credits for sounds/thatsItFortoday.mp3 - unable to find for now
+// 5) credits for sprites/rabbitBig.png: https://opengameart.org/content/mascot-bunny-character
+// 6) credits for sprites/carrot1.png: https://opengameart.org/content/mascot-bunny-character
+// 7) credits for sprites/platform.png: https://opengameart.org/content/dark-ground
+
+// define scene 1
 let scene1 = {
   key: "scene1",
   active: true,
@@ -19,35 +23,41 @@ let scene2 = {
   create: scene2Create,
   update: scene2Update,
 };
-
-let config = {
-  type: Phaser.AUTO,
-  width: 800,
-  height: 600,
-  physics: {
+// set up configuration for the game
+var config = {
+    type: Phaser.AUTO,
+    parent: 'phaser-example',
+    width: 800,
+   pixelArt: true,
+    height: 600,
+    dom: {
+        createContainer: true
+    },
+   physics: {
     default: "arcade",
     arcade: {
       gravity: { y: 300 },
       debug: false,
     },
-  },
-  scene: [scene1, scene2], // square brackets let us create a list/array of scenes for our game (1 only for now)
+   },
+    scene: [scene1, scene2],
 };
 
-// create game instance
-let game = new Phaser.Game(config);
-
+// variables for scene 1
 let scene1image;
 let sound1;
 
+// scene 1 preload
 function scene1Preload() {
   // preload our image and audio file
   this.load.image("title", "assets/images/PreGameImg.png");
   console.log("PreGame");
   // load audio asset files use this.load.audio()
   this.load.audio("music", "assets/sounds/cute.mp3");
+
 }
 
+// scene 1 create
 function scene1Create() {
   // make a image game object to show our bkgnd image
   scene1image = this.add.image(0, 0, "title").setOrigin(0, 0);
@@ -59,60 +69,89 @@ function scene1Create() {
   });
 
   // credits to: https://codepen.io/samme/pen/XWbReRd
-  this.input.keyboard.on(
-    "keydown_C",
-    function () {
-      this.scene.switch("scene2");
-    },
-    this
-  );
+  // credits to: https://www.thepolyglotdeveloper.com/2020/09/switch-between-scenes-phaser-game/
+  this.time.addEvent({
+        delay: 1000,
+        loop: false,
+        callback: () => {
+            this.scene.start("scene2");
+        }
+    })
 }
 
+// scene 1 update
 function scene1Update() {}
 
+// scene 1 transition
 function scene1Transition() {
   this.scene.start("scene2");
 }
-
-var rabbitBig;
-let fluflujump;
-
-var carrots;
-var platforms;
-var astroids;
-var extraText;
+// start new game
+var game = new Phaser.Game(config);
+// variables for scene 2
 var score = 0;
-var scoreText;
-let effect2;
-var byeBye = false;
-
+var platforms;
+// scene 2 preload
 function scene2Preload() {
-  this.load.audio("meadowThoughts", "assets/sounds/thatsItForToday.mp3");
-  this.load.image("meadow", "assets/images/meadow.jpg");
-  this.load.image("carrot", "assets/sprites/carrot1.png");
-  this.load.image("ground", "assets/platform.png");
-  this.load.image("platform2", "assets/platform2.png");
 
+    this.load.html('nameform', 'assets/html/nameform.html');
   this.load.spritesheet("rabbitBig", "assets/sprites/rabbitBig.png", {
-    frameWidth: 77,
+    frameWidth: 78,
     frameHeight: 52,
   });
+  this.load.audio("meadowThoughts", "assets/sounds/thatsItForToday.mp3");
+  this.load.image("meadow", "assets/images/meadow.jpg");
+  this.load.image("ground", "assets/platform.png");
+  this.load.image("carrot", "assets/sprites/carrot1.png");
+
+  
 }
+// scene 2 create
+function scene2Create() 
+{
+sound1.stop();
 
-function scene2Create() {
-  sound1.stop();
-  meadowThoughts = this.sound.add("meadowThoughts", { loop: false });
-  this.add.image(0, 0, "meadow").setOrigin(0, 0);
+  // credits to jjcapellan: https://phaser.discourse.group/t/countdown-timer/2471/4
+   console.log('create timer');
+    // 2:30 in seconds
+    this.initialTime = 60;
 
+    // Each 1000 ms call onEvent
+    timedEvent = this.time.addEvent({ delay: 1000, callback: onEvent, callbackScope: this, loop: true });
   platforms = this.physics.add.staticGroup();
 
-  platforms.create(640, 500, "ground").setScale(3).refreshBody();
+  platforms.create(640, 570, "ground").setScale(3).refreshBody();
+  
+  meadowThoughts = this.sound.add("meadowThoughts", { loop: true });
+  this.add.image(0, 0, "meadow").setOrigin(0, 0);
+  scoreText = this.add.text(415, 15, "score: 0", {
+    fontFamily: "Balsamiq Sans",
 
-  rabbitBig = this.physics.add.sprite(50, 350, "rabbitBig");
+    color: "#a579d4",
+    fontSize: "32px",
+  });
+  welcomeText = this.add.text(15, 15, "Type Away", {
+    fontFamily: "Balsamiq Sans",
+
+    color: "#a579d4",
+    fontSize: "32px",
+  });
+
+    timeText = this.add.text(615, 15, "timer: " + formatTime(this.initialTime), {
+    fontFamily: "Balsamiq Sans",
+
+    color: "#a579d4",
+    fontSize: "32px",
+  });
+
+   timedEvent = this.time.addEvent({ delay: 1000, callback: onEvent, callbackScope: this, loop: true });
+
+   
+rabbitBig = this.physics.add.sprite(50, 250, "rabbitBig");
+  
 
   rabbitBig.setBounce(0.2);
   rabbitBig.setCollideWorldBounds(true);
-
   this.anims.create({
     key: "left",
     frames: this.anims.generateFrameNumbers("rabbitBig", { start: 2, end: 4 }),
@@ -132,97 +171,61 @@ function scene2Create() {
     frameRate: 7,
     repeat: -1,
   });
-  cursors = this.input.keyboard.createCursorKeys();
-
-  carrots = this.physics.add.group({
-    key: "carrot",
-    repeat: 7,
-    setXY: { x: 12, y: 0, stepX: 80 },
-  });
-
-  carrots.children.iterate(function (child) {
-    child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-  });
-  this.tweens.add({
-    targets: carrots.getChildren(), // get an array containing each brick sprite inside of the bricks group
-    duration: 100, // duration and most time values in phaser are in milliseconds (1000ths of a second)
-    repeat: 2, // repeat of -1 means forever
-    ease: "Stepped",
-    easeParams: [10],
-    delay: 1000,
-  });
-  var platform2 = this.physics.add.image(300, 100, "platform2");
-
-  platform2.body.allowGravity = false;
-  platform2.body.immovable = true;
-  platform2.body.moves = false;
-  platform2.setVelocityY(50);
-  this.tweens.add({
-    targets: platform2,
-    y: 200,
-    duration: 2000,
-    ease: "Sine.easeInOut",
-    repeat: -1,
-    yoyo: true,
-  });
-  this.physics.add.collider(rabbitBig, platform2);
-
-  this.physics.add.collider(carrots, platform2);
-  scoreText = this.add.text(15, 15, "current score: 0", {
-    fontFamily: "Balsamiq Sans",
-
-    color: "#a579d4",
-    fontSize: "32px",
-  });
-  extraText = this.add.text(15, 45, "Welcome to Type Away", {
-    fontFamily: "Balsamiq Sans",
-
-    color: "#a579d4",
-    fontSize: "32px",
-  });
-
-  this.physics.add.collider(rabbitBig, platforms);
+  carrots = this.physics.add.sprite(150, 350, "carrot");
+   
+   carrots.setCollideWorldBounds(true);
+    this.physics.add.collider(rabbitBig, platforms);
 
   this.physics.add.collider(carrots, platforms);
+    // credits to Phaser: https://labs.phaser.io/edit.html?src=src%5Cgame%20objects%5Cdom%20element%5Cinput%20test.js
+    var text = this.add.text(300, 500, 'Please type: rabbit', { color: 'white', fontSize: '20px ', fontFamily: "Balsamiq Sans"});
+  
+    var element = this.add.dom(400, 577).createFromCache('nameform');
 
-  this.physics.add.overlap(rabbitBig, carrots, collectcarrot, null, this);
+    element.addListener('click');
 
+    element.on('click', function (event) {
+
+        if (event.target.name === 'playButton')
+        {
+            var inputText = this.getChildByName('nameField');
+
+            //  Have they entered anything?
+            if (inputText.value === "rabbit")
+            {
+                //  Turn off the click events
+                this.removeListener('click');
+
+                this.value = "";
+              
+                //  Hide the login element
+                this.setVisible(true);
+
+                //  Populate the text with whatever they typed in
+                //text.setText('Welcome ' + inputText.value);
+              //Move rabbit
+              rabbitBig.body.x += 77;
+        rabbitBig.x += 77;
+        rabbitBig.body.setVelocity(0, 48);
+            }
+            else 
+            {
+              if (initialTime === 0) {
+              welcomeText.setText("GAME OVER!");
+              }
+              
+                        }
+        }
+
+    });
+  meadowThoughts.play();
   //  Checks to see if the rabbitBig overlaps with any of the carrots, if she does call the collectcarrot function
   this.physics.add.overlap(rabbitBig, carrots, collectcarrot, null, this);
 
-  this.anims.create({
-    key: "explode",
-    frames: this.anims.generateFrameNumbers("explosion"),
-    frameRate: 20,
-    repeat: 0,
-    hideOnComplete: true,
-  });
-
-  meadowThoughts.play();
 }
 
 function scene2Update() {
-  cursors = this.input.keyboard.createCursorKeys();
-  if (byeBye) {
-    return;
-  }
-  if (cursors.left.isDown) {
-    rabbitBig.setVelocityX(-200);
 
-    rabbitBig.anims.play("left", true);
-  } else if (cursors.right.isDown) {
-    rabbitBig.setVelocityX(200);
-
-    rabbitBig.anims.play("right", true);
-  } else {
-    rabbitBig.setVelocityX(0);
-
-    rabbitBig.anims.play("turn");
-  }
-
-  if (cursors.up.isDown && rabbitBig.body.touching.down) {
-    rabbitBig.setVelocityY(-400);
-  }
 }
 
 function collectcarrot(rabbitBig, carrots) {
@@ -230,16 +233,16 @@ function collectcarrot(rabbitBig, carrots) {
 
   //  Add and update the score
   score += 100;
-  scoreText.setText("current score: " + score);
+  scoreText.setText("score: " + score);
 
   if (score === 0) {
-    extraText.setText("");
+    welcomeText.setText("");
   }
-  if (score === 1000) {
-    extraText.setText("Level 1: passed");
+  if (score === 100) {
+    welcomeText.setText("Level 1: passed");
   }
-  if (score === 2000) {
-    extraText.setText("Level 2: passed");
+  if (score === 200) {
+    welcomeText.setText("Level 2: passed");
 
     var x =
       rabbitBig.x < 400
@@ -259,4 +262,29 @@ function collectcarrot(rabbitBig, carrots) {
     rabbitBig.x < 400
       ? Phaser.Math.Between(400, 800)
       : Phaser.Math.Between(0, 400);
+}
+// credits to: https://phaser.discourse.group/t/countdown-timer/2471/4
+
+// credits to jjcapellan: https://phaser.discourse.group/t/countdown-timer/2471/4
+// formatTime function to format the way the time looks
+function formatTime(seconds){
+    // Minutes
+    var minutes = Math.floor(seconds/60);
+    // Seconds
+    var partInSeconds = seconds%60;
+    // Adds left zeros to seconds
+    partInSeconds = partInSeconds.toString().padStart(2,'0');
+    // Returns formated time
+    return `${minutes}:${partInSeconds}`;
+}
+
+// credits to jjcapellan: https://phaser.discourse.group/t/countdown-timer/2471/4
+// onEvent function
+function onEvent ()
+{
+    this.initialTime -= 1; // One second
+    timeText.setText('timer: ' + formatTime(this.initialTime));
+   if (this.initialTime < 0) {
+     timeText.setText('GAME OVER');
+   }
 }
